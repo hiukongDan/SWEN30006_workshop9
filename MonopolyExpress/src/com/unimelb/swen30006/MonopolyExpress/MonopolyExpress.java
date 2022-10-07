@@ -14,36 +14,23 @@ import java.util.Scanner;
 import com.unimelb.swen30006.MonopolyExpress.Board.BoardGame;
 import com.unimelb.swen30006.MonopolyExpress.Dice.DiceCup;
 import com.unimelb.swen30006.MonopolyExpress.Dice.Die;
-import com.unimelb.swen30006.MonopolyExpress.Utility.Observable;
+import com.unimelb.swen30006.MonopolyExpress.Utility.GameStatus;
+import com.unimelb.swen30006.MonopolyExpress.Utility.Logger;
 import com.unimelb.swen30006.MonopolyExpress.Utility.TurnData;
 
 
 
-public class MonopolyExpress extends Observable{
+public class MonopolyExpress{
 	
-	private static MonopolyExpress _instance;
-	private MonopolyExpress() {
-		
-	}
-	
-	public MonopolyExpress getInstance() {
-		if (_instance == null) {
-			synchronized(MonopolyExpress.class) {
-				if(_instance == null) {
-					_instance = new MonopolyExpress();
-				}
-			}
-		}
-		return _instance;
-	}
-	
-
 	public static void main(String[] args) {
 		
 		BoardGame board = new BoardGame();
 		ArrayList<Player> players = new ArrayList<Player>();
 		
 		MonopolyExpress monopolyExpress = new MonopolyExpress();
+		
+		// initialize logger
+		Logger.getInstance();
 		
 		players.add(new Player("A"));
 		players.add(new Player("B"));
@@ -56,31 +43,34 @@ public class MonopolyExpress extends Observable{
 		
 		while(!hasWinner) {
 			Player currentPlayer = players.remove(0);
+			currentPlayer.newTurn();
 			System.out.println("====== "+currentPlayer.getName()+"'s turn ====");
 			cup.reset();
 			
 			boolean turnEnds = false;
 			do {
 				//Roll the dice and show the faces
-				LinkedList<Die> dice = cup.roll();
+				ArrayList<Die> dice = new ArrayList<Die>(cup.roll());
 				System.out.println("Dice are: ");
 				for(int i = 0; i < dice.size(); i++) {
 					Die die = dice.get(i);
-					System.out.println(i + ": " + die.getCurrentFaceName());
+					System.out.println((i+1) + ": " + die.getCurrentFaceName());
 				}
 				
 				//Check PoliceDice and place on the board
-				LinkedList<Die> diceCpy = new LinkedList<>(dice);
-				for(int i = 0; i < dice.size(); i++) {
-					if(dice.get(i).getCurrentFaceName() == "Police") {
-						board.placeDie(dice.get(i));
-						diceCpy.remove(dice.get(i));
-						cup.removeFromRemaining(dice.get(i));
+				ArrayList<Die> diceCpy = new ArrayList<Die>();
+				for(Die die: dice) {
+					if(die.getCurrentFaceName() == "Police") {
+						board.placeDie(die);
+						cup.removeFromRemaining(die);
+					}
+					else {
+						diceCpy.add(die);
 					}
 				}
 				dice = diceCpy;
 				
-				LinkedList<Die> remaining = new LinkedList<Die>();
+				ArrayList<Die> remaining = new ArrayList<Die>();
 				for(Die d: dice) {
 					if(d.getCurrentFaceName() != "<blank>") {
 						remaining.add(d);
@@ -115,7 +105,10 @@ public class MonopolyExpress extends Observable{
 							Die die = remaining.get(index-1);
 							cup.removeFromRemaining(die);
 							remaining.remove(die);
+							board.placeDie(die);
 						}
+						
+						System.out.println("Current board:\n" + board.show());
 						
 					}while(remaining.size() != 0 && index != -1);
 					
@@ -139,7 +132,7 @@ public class MonopolyExpress extends Observable{
 			
 			
 			// Notify subscribers
-			_instance.update(new TurnData(currentPlayer, board));
+			GameStatus.getInstance().update(new TurnData(currentPlayer, board));
 			
 			players.add(currentPlayer);
 			board.reset();
