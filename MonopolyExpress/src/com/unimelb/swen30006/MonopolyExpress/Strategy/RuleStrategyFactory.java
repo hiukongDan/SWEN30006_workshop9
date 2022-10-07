@@ -1,19 +1,19 @@
 package com.unimelb.swen30006.MonopolyExpress.Strategy;
 
 
-public class StrategyFactory {
-	private static StrategyFactory _instance;
-	public StrategyFactory getInstance() {
+public class RuleStrategyFactory {
+	private static RuleStrategyFactory _instance;
+	public static RuleStrategyFactory getInstance() {
 		if(_instance == null) {
-			synchronized(StrategyFactory.class) {
+			synchronized(RuleStrategyFactory.class) {
 				if (_instance == null) {
-					_instance = new StrategyFactory();
+					_instance = new RuleStrategyFactory();
 				}
 			}
 		}
 		return _instance;
 	}
-	private StrategyFactory() {
+	private RuleStrategyFactory() {
 		
 	}
 	

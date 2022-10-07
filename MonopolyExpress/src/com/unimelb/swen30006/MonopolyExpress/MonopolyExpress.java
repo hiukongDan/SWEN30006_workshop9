@@ -14,6 +14,7 @@ import java.util.Scanner;
 import com.unimelb.swen30006.MonopolyExpress.Board.BoardGame;
 import com.unimelb.swen30006.MonopolyExpress.Dice.DiceCup;
 import com.unimelb.swen30006.MonopolyExpress.Dice.Die;
+import com.unimelb.swen30006.MonopolyExpress.Strategy.RuleStrategyFactory;
 import com.unimelb.swen30006.MonopolyExpress.Utility.GameStatus;
 import com.unimelb.swen30006.MonopolyExpress.Utility.Logger;
 import com.unimelb.swen30006.MonopolyExpress.Utility.TurnData;
@@ -58,22 +59,14 @@ public class MonopolyExpress{
 				}
 				
 				//Check PoliceDice and place on the board
-				ArrayList<Die> diceCpy = new ArrayList<Die>();
+				ArrayList<Die> remaining = new ArrayList<Die>();
 				for(Die die: dice) {
 					if(die.getCurrentFaceName() == "Police") {
 						board.placeDie(die);
 						cup.removeFromRemaining(die);
 					}
-					else {
-						diceCpy.add(die);
-					}
-				}
-				dice = diceCpy;
-				
-				ArrayList<Die> remaining = new ArrayList<Die>();
-				for(Die d: dice) {
-					if(d.getCurrentFaceName() != "<blank>") {
-						remaining.add(d);
+					else if(die.getCurrentFaceName() != "<blank>"){
+						remaining.add(die);
 					}
 				}
 				
@@ -126,13 +119,16 @@ public class MonopolyExpress{
 				}
 	
 			}while(!turnEnds);
-			System.out.println("Turn ends");
+			
 			
 			//Calculate score
-			
+			currentPlayer.addScore(RuleStrategyFactory.getInstance().getStrategy(currentPlayer.getTurn()).sumMoneyPoint(board));
 			
 			// Notify subscribers
 			GameStatus.getInstance().update(new TurnData(currentPlayer, board));
+			
+			System.out.println("Turn ends");
+			System.out.println("Player " + currentPlayer.getName() + " current score: " + currentPlayer.getScore());
 			
 			players.add(currentPlayer);
 			board.reset();
