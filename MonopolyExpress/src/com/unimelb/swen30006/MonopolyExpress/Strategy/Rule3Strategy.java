@@ -9,9 +9,10 @@ public class Rule3Strategy extends RuleStrategy{
 	public int sumMoneyPoint(BoardGame board) {
 		int ret = 0;
 		for(SquareSet ss: board.getInCompleteGroup()) {
-			if (ss.getSumValue() > ret) {
-				ret = ss.getSumValue();
-			}
+			ret += ss.getSumValue();
+		}
+		for(SquareSet ss: board.getCompleteGroup()) {
+			ret += ss.getSumValue();
 		}
 		return ret;
 	}
